@@ -461,8 +461,16 @@ select option {
 .chart-controls {
     display: flex;
     justify-content: flex-end;
+    gap: 8px;
     margin-bottom: 10px;
     flex-shrink: 0;
+}
+
+.chart-controls select {
+    flex: none;
+    width: auto;
+    padding: 6px 10px;
+    font-size: 11px;
 }
 
 .chart-controls .btn-secondary {

@@ -101,7 +101,11 @@
             <div class="right-panel">
                 <section class="chart-section">
                     <div class="chart-controls">
-                        <button id="exportChart" class="btn-secondary">Export Chart</button>
+                        <select id="exportFormat">
+                            <option value="png">PNG Image</option>
+                            <option value="csv">CSV Data</option>
+                        </select>
+                        <button id="exportChart" class="btn-secondary">Export</button>
                     </div>
                     <div class="chart-wrapper">
                         <canvas id="payoffChart"></canvas>

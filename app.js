@@ -768,8 +768,55 @@ function updateRiskFreeSummary() {
 }
 
 function exportChart() {
+    const format = document.getElementById('exportFormat').value;
+    
+    if (format === 'png') {
+        const link = document.createElement('a');
+        link.download = 'payoff-diagram.png';
+        link.href = chart.toBase64Image();
+        link.click();
+    } else if (format === 'csv') {
+        exportCSV();
+    }
+}
+
+function exportCSV() {
+    if (positions.length === 0) {
+        alert('No positions to export');
+        return;
+    }
+    
+    const priceRange = determineDefaultPriceRange(positions);
+    const payoffData = generatePayoffData(positions, priceRange.min, priceRange.max, settings);
+    
+    // Build CSV content
+    let csv = 'Underlying Price,Total Payoff\n';
+    payoffData.forEach(point => {
+        csv += `${point.x.toFixed(2)},${point.y.toFixed(2)}\n`;
+    });
+    
+    // Add positions summary
+    csv += '\n\nPositions Summary\n';
+    csv += 'Type,Strike/Price,Premium/Cost,Quantity\n';
+    positions.forEach(pos => {
+        const strike = pos.strike || pos.principal || 0;
+        const cost = pos.cost || 0;
+        csv += `${blockNames[pos.type]},${strike},${cost},${pos.quantity || 1}\n`;
+    });
+    
+    // Add settings
+    csv += '\n\nSettings\n';
+    csv += `Spot Price,${settings.spotPrice}\n`;
+    csv += `Risk-Free Rate,${(settings.riskFreeRate * 100).toFixed(2)}%\n`;
+    csv += `Time to Maturity,${settings.timeToMaturity} years\n`;
+    csv += `Volatility,${(settings.volatility * 100).toFixed(2)}%\n`;
+    csv += `Black-Scholes Mode,${bsMode ? 'Yes' : 'No'}\n`;
+    
+    // Download
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
-    link.download = 'payoff-diagram.png';
-    link.href = chart.toBase64Image();
+    link.href = URL.createObjectURL(blob);
+    link.download = 'payoff-data.csv';
     link.click();
+    URL.revokeObjectURL(link.href);
 }
