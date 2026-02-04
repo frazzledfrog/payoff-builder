@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Payoff Diagram Builder</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Financial Payoff Diagram Builder</h1>
+            <p>Build complex payoff structures using the 10 building blocks of financial products</p>
+        </header>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <section class="settings-section">
+                    <h2>Settings</h2>
+                    <div class="settings-inputs">
+                        <div class="input-group">
+                            <label>Spot Price (S₀)</label>
+                            <input type="number" id="spotPrice" value="100" step="1" onchange="updateSettings()">
+                        </div>
+                        <div class="input-group">
+                            <label>Risk-Free Rate (%)</label>
+                            <input type="number" id="riskFreeRate" value="5" step="0.1" onchange="updateSettings()">
+                        </div>
+                        <div class="input-group">
+                            <label>Time to Maturity (Yrs)</label>
+                            <input type="number" id="timeToMaturity" value="1" step="0.1" onchange="updateSettings()">
+                        </div>
+                        <div class="input-group">
+                            <label>Volatility (%)</label>
+                            <input type="number" id="volatility" value="20" step="1" onchange="updateSettings()">
+                        </div>
+                    </div>
+                    <div class="bs-toggle">
+                        <label class="toggle-label">
+                            <input type="checkbox" id="bsMode" onchange="toggleBSMode()">
+                            <span>Black-Scholes Auto-Pricing</span>
+                        </label>
+                    </div>
+                </section>
+
+                <section class="building-blocks-section">
+                    <h2>Building Blocks</h2>
+                    <div class="block-selector">
+                        <select id="blockType">
+                            <option value="long_risk_free">Long Risk-Free Rate</option>
+                            <option value="short_risk_free">Short Risk-Free Rate</option>
+                            <option value="long_underlying">Long Underlying</option>
+                            <option value="short_underlying">Short Underlying</option>
+                            <option value="long_forward">Long Forward/Future</option>
+                            <option value="short_forward">Short Forward/Future</option>
+                            <option value="long_call">Long Call</option>
+                            <option value="short_call">Short Call</option>
+                            <option value="long_put">Long Put</option>
+                            <option value="short_put">Short Put</option>
+                        </select>
+                        <button id="addBlock" class="btn-primary">Add Block</button>
+                    </div>
+                </section>
+
+                <section class="strategy-section">
+                    <h2>Preset Strategies</h2>
+                    <div class="strategy-buttons">
+                        <button class="btn-strategy" data-strategy="straddle">Long Straddle</button>
+                        <button class="btn-strategy" data-strategy="strangle">Long Strangle</button>
+                        <button class="btn-strategy" data-strategy="butterfly">Butterfly Spread</button>
+                        <button class="btn-strategy" data-strategy="collar">Collar</button>
+                        <button class="btn-strategy" data-strategy="covered_call">Covered Call</button>
+                        <button class="btn-strategy" data-strategy="protective_put">Protective Put</button>
+                        <button class="btn-strategy" data-strategy="bull_spread">Bull Call Spread</button>
+                        <button class="btn-strategy" data-strategy="bear_spread">Bear Put Spread</button>
+                    </div>
+                    <button id="clearAll" class="btn-secondary">Clear All</button>
+                </section>
+
+                <section class="positions-section">
+                    <h2>Current Positions</h2>
+                    <div id="positionsList"></div>
+                </section>
+            </div>
+
+            <div class="right-panel">
+                <section class="chart-section">
+                    <div class="chart-controls">
+                        <button id="exportChart" class="btn-secondary">Export Chart</button>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="payoffChart"></canvas>
+                    </div>
+                </section>
+
+                <section class="pnl-section">
+                    <h2>Risk-Free Summary</h2>
+                    <div id="riskFreeSummary"></div>
+                </section>
+
+                <section class="pnl-section">
+                    <h2>P&L Table</h2>
+                    <div id="pnlTable"></div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="payoff.js"></script>
+    <script src="strategies.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
