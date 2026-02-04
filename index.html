@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="bloomberg">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,8 +10,22 @@
 <body>
     <div class="container">
         <header>
-            <h1>Financial Payoff Diagram Builder</h1>
-            <p>Build complex payoff structures using the 10 building blocks of financial products</p>
+            <div class="header-content">
+                <div>
+                    <h1>Financial Payoff Diagram Builder</h1>
+                    <p>Build complex payoff structures using the 10 building blocks of financial products</p>
+                </div>
+                <div class="theme-selector">
+                    <label for="themeSelect">Theme:</label>
+                    <select id="themeSelect" onchange="setTheme(this.value)">
+                        <option value="bloomberg">Bloomberg</option>
+                        <option value="light">Light</option>
+                        <option value="matrix">Matrix</option>
+                        <option value="midnight">Midnight</option>
+                        <option value="sunset">Sunset</option>
+                    </select>
+                </div>
+            </div>
         </header>
 
         <div class="main-content">

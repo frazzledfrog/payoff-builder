@@ -4,11 +4,71 @@ let positions = [];
 let chart = null;
 let nextId = 1;
 let bsMode = false;
+let currentTheme = 'bloomberg';
 let settings = {
     spotPrice: 100,
     riskFreeRate: 0.05,
     timeToMaturity: 1,
     volatility: 0.20
+};
+
+// Theme color definitions for chart
+const themeColors = {
+    bloomberg: {
+        line: '#00ff00',
+        lineBg: 'rgba(0, 255, 0, 0.05)',
+        breakeven: '#ff9900',
+        kink: '#ff9900',
+        grid: '#333',
+        text: '#888',
+        title: '#ff9900',
+        tooltipBg: '#1a1a1a',
+        tooltipBorder: '#333'
+    },
+    light: {
+        line: '#2563eb',
+        lineBg: 'rgba(37, 99, 235, 0.1)',
+        breakeven: '#666',
+        kink: '#2563eb',
+        grid: '#e5e5e5',
+        text: '#666',
+        title: '#333',
+        tooltipBg: '#fff',
+        tooltipBorder: '#ddd'
+    },
+    matrix: {
+        line: '#00ff00',
+        lineBg: 'rgba(0, 255, 0, 0.1)',
+        breakeven: '#00aa00',
+        kink: '#00ff00',
+        grid: '#003300',
+        text: '#00aa00',
+        title: '#00ff00',
+        tooltipBg: '#0a0a0a',
+        tooltipBorder: '#003300'
+    },
+    midnight: {
+        line: '#38bdf8',
+        lineBg: 'rgba(56, 189, 248, 0.1)',
+        breakeven: '#94a3b8',
+        kink: '#38bdf8',
+        grid: '#334155',
+        text: '#94a3b8',
+        title: '#38bdf8',
+        tooltipBg: '#1e293b',
+        tooltipBorder: '#334155'
+    },
+    sunset: {
+        line: '#feca57',
+        lineBg: 'rgba(254, 202, 87, 0.1)',
+        breakeven: '#e94560',
+        kink: '#ff6b6b',
+        grid: '#e94560',
+        text: '#c4c4c4',
+        title: '#ff6b6b',
+        tooltipBg: '#16213e',
+        tooltipBorder: '#e94560'
+    }
 };
 
 // Block type display names
@@ -37,6 +97,46 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeChart();
     setupEventListeners();
 });
+
+function setTheme(theme) {
+    currentTheme = theme;
+    document.documentElement.setAttribute('data-theme', theme);
+    updateChartColors();
+}
+
+function updateChartColors() {
+    if (!chart) return;
+    
+    const colors = themeColors[currentTheme];
+    
+    // Update line colors
+    chart.data.datasets[0].borderColor = colors.line;
+    chart.data.datasets[0].backgroundColor = colors.lineBg;
+    chart.data.datasets[1].borderColor = colors.breakeven;
+    chart.data.datasets[2].backgroundColor = colors.kink;
+    chart.data.datasets[2].pointBorderColor = colors.kink;
+    
+    // Update scales
+    chart.options.scales.x.grid.color = colors.grid;
+    chart.options.scales.x.ticks.color = colors.text;
+    chart.options.scales.x.title.color = colors.text;
+    chart.options.scales.y.grid.color = (context) => {
+        if (context.tick.value === 0) return colors.breakeven;
+        return colors.grid;
+    };
+    chart.options.scales.y.ticks.color = colors.text;
+    chart.options.scales.y.title.color = colors.text;
+    
+    // Update plugins
+    chart.options.plugins.title.color = colors.title;
+    chart.options.plugins.legend.labels.color = colors.text;
+    chart.options.plugins.tooltip.backgroundColor = colors.tooltipBg;
+    chart.options.plugins.tooltip.borderColor = colors.tooltipBorder;
+    chart.options.plugins.tooltip.titleColor = colors.title;
+    chart.options.plugins.tooltip.bodyColor = colors.line;
+    
+    chart.update();
+}
 
 function setupEventListeners() {
     document.getElementById('addBlock').addEventListener('click', addBlock);

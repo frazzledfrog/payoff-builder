@@ -1,3 +1,101 @@
+/* ============================================
+   Theme Definitions
+   ============================================ */
+
+/* Bloomberg (Default) */
+[data-theme="bloomberg"] {
+    --bg-primary: #000000;
+    --bg-secondary: #1a1a1a;
+    --bg-input: #1a1a1a;
+    --border-color: #333;
+    --text-primary: #ff9900;
+    --text-secondary: #888;
+    --text-input: #fff;
+    --accent: #ff9900;
+    --positive: #00ff00;
+    --negative: #ff4444;
+    --chart-line: #00ff00;
+    --chart-bg: rgba(0, 255, 0, 0.05);
+    --btn-primary-bg: #ff9900;
+    --btn-primary-text: #000;
+}
+
+/* Light */
+[data-theme="light"] {
+    --bg-primary: #f5f5f5;
+    --bg-secondary: #ffffff;
+    --bg-input: #ffffff;
+    --border-color: #ddd;
+    --text-primary: #333;
+    --text-secondary: #666;
+    --text-input: #333;
+    --accent: #2563eb;
+    --positive: #16a34a;
+    --negative: #dc2626;
+    --chart-line: #2563eb;
+    --chart-bg: rgba(37, 99, 235, 0.1);
+    --btn-primary-bg: #2563eb;
+    --btn-primary-text: #fff;
+}
+
+/* Matrix */
+[data-theme="matrix"] {
+    --bg-primary: #0a0a0a;
+    --bg-secondary: #0f0f0f;
+    --bg-input: #0a0a0a;
+    --border-color: #003300;
+    --text-primary: #00ff00;
+    --text-secondary: #00aa00;
+    --text-input: #00ff00;
+    --accent: #00ff00;
+    --positive: #00ff00;
+    --negative: #ff0000;
+    --chart-line: #00ff00;
+    --chart-bg: rgba(0, 255, 0, 0.1);
+    --btn-primary-bg: #00ff00;
+    --btn-primary-text: #000;
+}
+
+/* Midnight */
+[data-theme="midnight"] {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-input: #1e293b;
+    --border-color: #334155;
+    --text-primary: #38bdf8;
+    --text-secondary: #94a3b8;
+    --text-input: #e2e8f0;
+    --accent: #38bdf8;
+    --positive: #4ade80;
+    --negative: #f87171;
+    --chart-line: #38bdf8;
+    --chart-bg: rgba(56, 189, 248, 0.1);
+    --btn-primary-bg: #38bdf8;
+    --btn-primary-text: #0f172a;
+}
+
+/* Sunset */
+[data-theme="sunset"] {
+    --bg-primary: #1a1a2e;
+    --bg-secondary: #16213e;
+    --bg-input: #16213e;
+    --border-color: #e94560;
+    --text-primary: #ff6b6b;
+    --text-secondary: #c4c4c4;
+    --text-input: #fff;
+    --accent: #ff6b6b;
+    --positive: #4ecdc4;
+    --negative: #ff6b6b;
+    --chart-line: #feca57;
+    --chart-bg: rgba(254, 202, 87, 0.1);
+    --btn-primary-bg: #e94560;
+    --btn-primary-text: #fff;
+}
+
+/* ============================================
+   Base Styles
+   ============================================ */
+
 * {
     margin: 0;
     padding: 0;
@@ -6,28 +104,32 @@
 
 body {
     font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-    background: #000000;
+    background: var(--bg-primary);
     min-height: 100vh;
     padding: 10px;
-    color: #ff9900;
+    color: var(--text-primary);
 }
 
 .container {
     max-width: 1600px;
     margin: 0 auto;
-    background: #1a1a1a;
-    border: 1px solid #333;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     overflow: hidden;
 }
 
 header {
-    background: #000000;
-    color: #ff9900;
+    background: var(--bg-primary);
+    color: var(--text-primary);
     padding: 15px 20px;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.header-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 20px;
 }
 
 header h1 {
@@ -39,21 +141,43 @@ header h1 {
 
 header p {
     font-size: 0.85em;
-    color: #888;
+    color: var(--text-secondary);
+}
+
+.theme-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.theme-selector label {
+    color: var(--text-secondary);
+}
+
+.theme-selector select {
+    padding: 6px 10px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    font-family: inherit;
+    font-size: 11px;
+    cursor: pointer;
 }
 
 .main-content {
     display: grid;
     grid-template-columns: 340px 1fr;
     gap: 1px;
-    background: #333;
+    background: var(--border-color);
 }
 
 .left-panel {
     display: flex;
     flex-direction: column;
     gap: 1px;
-    background: #333;
+    background: var(--border-color);
     min-width: 0;
     overflow: hidden;
 }
@@ -62,13 +186,13 @@ header p {
     display: flex;
     flex-direction: column;
     gap: 1px;
-    background: #333;
+    background: var(--border-color);
     min-width: 0;
     overflow: hidden;
 }
 
 section {
-    background: #1a1a1a;
+    background: var(--bg-secondary);
     padding: 15px;
     min-width: 0;
     overflow: hidden;
@@ -88,7 +212,7 @@ section {
 h2 {
     font-size: 0.85em;
     margin-bottom: 12px;
-    color: #ff9900;
+    color: var(--text-primary);
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: normal;
@@ -103,7 +227,7 @@ h2 {
 .bs-toggle {
     margin-top: 10px;
     padding-top: 10px;
-    border-top: 1px solid #333;
+    border-top: 1px solid var(--border-color);
 }
 
 .toggle-label {
@@ -112,7 +236,7 @@ h2 {
     gap: 8px;
     cursor: pointer;
     font-size: 11px;
-    color: #888;
+    color: var(--text-secondary);
     text-transform: uppercase;
 }
 
@@ -120,18 +244,18 @@ h2 {
     appearance: none;
     width: 14px;
     height: 14px;
-    border: 1px solid #444;
-    background: #000;
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
     cursor: pointer;
 }
 
 .toggle-label input[type="checkbox"]:checked {
-    background: #00ff00;
-    border-color: #00ff00;
+    background: var(--positive);
+    border-color: var(--positive);
 }
 
 .toggle-label input[type="checkbox"]:checked + span {
-    color: #00ff00;
+    color: var(--positive);
 }
 
 .block-selector {
@@ -142,9 +266,9 @@ h2 {
 select {
     flex: 1;
     padding: 8px;
-    border: 1px solid #444;
-    background: #000;
-    color: #ff9900;
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    color: var(--text-primary);
     font-family: inherit;
     font-size: 12px;
     cursor: pointer;
@@ -152,17 +276,17 @@ select {
 
 select:focus {
     outline: none;
-    border-color: #ff9900;
+    border-color: var(--accent);
 }
 
 select option {
-    background: #000;
-    color: #ff9900;
+    background: var(--bg-primary);
+    color: var(--text-primary);
 }
 
 .btn-primary {
-    background: #ff9900;
-    color: #000;
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
     border: none;
     padding: 8px 16px;
     font-family: inherit;
@@ -173,13 +297,13 @@ select option {
 }
 
 .btn-primary:hover {
-    background: #ffaa33;
+    filter: brightness(1.1);
 }
 
 .btn-secondary {
-    background: #333;
-    color: #ff9900;
-    border: 1px solid #ff9900;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--accent);
     padding: 8px 16px;
     font-family: inherit;
     font-size: 12px;
@@ -189,7 +313,7 @@ select option {
 }
 
 .btn-secondary:hover {
-    background: #444;
+    filter: brightness(1.2);
 }
 
 .strategy-buttons {
@@ -200,9 +324,9 @@ select option {
 }
 
 .btn-strategy {
-    background: #000;
-    color: #00ff00;
-    border: 1px solid #333;
+    background: var(--bg-primary);
+    color: var(--positive);
+    border: 1px solid var(--border-color);
     padding: 8px;
     font-family: inherit;
     font-size: 11px;
@@ -210,8 +334,8 @@ select option {
 }
 
 .btn-strategy:hover {
-    background: #1a1a1a;
-    border-color: #00ff00;
+    background: var(--bg-secondary);
+    border-color: var(--positive);
 }
 
 #positionsList {
@@ -230,16 +354,16 @@ select option {
 }
 
 #positionsList::-webkit-scrollbar-track {
-    background: #1a1a1a;
+    background: var(--bg-secondary);
 }
 
 #positionsList::-webkit-scrollbar-thumb {
-    background: #444;
+    background: var(--border-color);
 }
 
 .position-item {
-    background: #000;
-    border: 1px solid #333;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
     padding: 10px;
     flex-shrink: 0;
 }
@@ -254,7 +378,7 @@ select option {
 
 .position-title {
     font-size: 11px;
-    color: #00ff00;
+    color: var(--positive);
     text-transform: uppercase;
     white-space: nowrap;
     overflow: hidden;
@@ -265,8 +389,8 @@ select option {
 
 .btn-remove {
     background: transparent;
-    color: #ff4444;
-    border: 1px solid #ff4444;
+    color: var(--negative);
+    border: 1px solid var(--negative);
     padding: 3px 8px;
     font-family: inherit;
     font-size: 10px;
@@ -275,8 +399,8 @@ select option {
 }
 
 .btn-remove:hover {
-    background: #ff4444;
-    color: #000;
+    background: var(--negative);
+    color: var(--bg-primary);
 }
 
 .position-inputs {
@@ -301,15 +425,15 @@ select option {
 
 .input-group label {
     font-size: 9px;
-    color: #888;
+    color: var(--text-secondary);
     text-transform: uppercase;
 }
 
 .input-group input {
     padding: 4px 6px;
-    border: 1px solid #444;
-    background: #1a1a1a;
-    color: #fff;
+    border: 1px solid var(--border-color);
+    background: var(--bg-input);
+    color: var(--text-input);
     font-family: inherit;
     font-size: 11px;
     width: 100%;
@@ -317,15 +441,15 @@ select option {
 }
 
 .input-group input.input-bs-auto {
-    background: #0a1a0a;
-    border-color: #00ff00;
-    color: #00ff00;
+    background: color-mix(in srgb, var(--positive) 10%, var(--bg-primary));
+    border-color: var(--positive);
+    color: var(--positive);
     cursor: not-allowed;
 }
 
 .input-group input:focus {
     outline: none;
-    border-color: #ff9900;
+    border-color: var(--accent);
 }
 
 .chart-section {
@@ -352,7 +476,7 @@ select option {
 }
 
 #payoffChart {
-    background: #000;
+    background: var(--bg-primary);
     position: absolute;
     top: 0;
     left: 0;
@@ -372,29 +496,29 @@ select option {
 }
 
 #pnlTable::-webkit-scrollbar-track {
-    background: #1a1a1a;
+    background: var(--bg-secondary);
 }
 
 #pnlTable::-webkit-scrollbar-thumb {
-    background: #444;
+    background: var(--border-color);
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    background: #000;
+    background: var(--bg-primary);
     font-size: 12px;
 }
 
 th, td {
     padding: 8px 12px;
     text-align: right;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid var(--border-color);
 }
 
 th {
-    background: #1a1a1a;
-    color: #ff9900;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
     font-weight: normal;
     text-transform: uppercase;
     font-size: 11px;
@@ -403,19 +527,19 @@ th {
 }
 
 td {
-    color: #888;
+    color: var(--text-secondary);
 }
 
 td.positive {
-    color: #00ff00;
+    color: var(--positive);
 }
 
 td.negative {
-    color: #ff4444;
+    color: var(--negative);
 }
 
 tr:hover td {
-    background: #1a1a1a;
+    background: var(--bg-secondary);
 }
 
 tr:last-child td {
@@ -429,5 +553,10 @@ tr:last-child td {
     
     .chart-section {
         height: 400px;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }
