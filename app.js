@@ -576,6 +576,11 @@ function loadStrategy(strategyKey) {
         ...pos
     }));
     
+    // Apply BS pricing if enabled
+    if (bsMode) {
+        recalculateBSPrices();
+    }
+    
     renderPositions();
     updateChart();
     updatePnLTable();
