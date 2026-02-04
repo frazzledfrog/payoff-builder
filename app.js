@@ -68,6 +68,28 @@ const themeColors = {
         title: '#ff6b6b',
         tooltipBg: '#16213e',
         tooltipBorder: '#e94560'
+    },
+    pink: {
+        line: '#ff1493',
+        lineBg: 'rgba(255, 20, 147, 0.1)',
+        breakeven: '#ff69b4',
+        kink: '#ff1493',
+        grid: '#ff69b4',
+        text: '#d4a5d4',
+        title: '#ffb3d9',
+        tooltipBg: '#3d2745',
+        tooltipBorder: '#ff69b4'
+    },
+    laurier: {
+        line: '#ffd700',
+        lineBg: 'rgba(255, 215, 0, 0.1)',
+        breakeven: '#d4af37',
+        kink: '#ffd700',
+        grid: '#6a3fb5',
+        text: '#d4af37',
+        title: '#ffd700',
+        tooltipBg: '#2e1a52',
+        tooltipBorder: '#ffd700'
     }
 };
 

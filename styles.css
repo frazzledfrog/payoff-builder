@@ -92,6 +92,42 @@
     --btn-primary-text: #fff;
 }
 
+/* Pink */
+[data-theme="pink"] {
+    --bg-primary: #2d1b2e;
+    --bg-secondary: #3d2745;
+    --bg-input: #3d2745;
+    --border-color: #ff69b4;
+    --text-primary: #ffb3d9;
+    --text-secondary: #d4a5d4;
+    --text-input: #fff;
+    --accent: #ff69b4;
+    --positive: #ff1493;
+    --negative: #ff69b4;
+    --chart-line: #ff1493;
+    --chart-bg: rgba(255, 20, 147, 0.1);
+    --btn-primary-bg: #ff69b4;
+    --btn-primary-text: #2d1b2e;
+}
+
+/* Laurier (Purple & Gold) */
+[data-theme="laurier"] {
+    --bg-primary: #1a0f2e;
+    --bg-secondary: #2e1a52;
+    --bg-input: #2e1a52;
+    --border-color: #ffd700;
+    --text-primary: #ffd700;
+    --text-secondary: #d4af37;
+    --text-input: #fff;
+    --accent: #ffd700;
+    --positive: #ffd700;
+    --negative: #ff6b6b;
+    --chart-line: #ffd700;
+    --chart-bg: rgba(255, 215, 0, 0.1);
+    --btn-primary-bg: #6a3fb5;
+    --btn-primary-text: #ffd700;
+}
+
 /* ============================================
    Base Styles
    ============================================ */
