@@ -106,16 +106,16 @@ function setTheme(theme) {
 
 function updateChartColors() {
     if (!chart) return;
-    
+
     const colors = themeColors[currentTheme];
-    
+
     // Update line colors
     chart.data.datasets[0].borderColor = colors.line;
     chart.data.datasets[0].backgroundColor = colors.lineBg;
     chart.data.datasets[1].borderColor = colors.breakeven;
     chart.data.datasets[2].backgroundColor = colors.kink;
     chart.data.datasets[2].pointBorderColor = colors.kink;
-    
+
     // Update scales
     chart.options.scales.x.grid.color = colors.grid;
     chart.options.scales.x.ticks.color = colors.text;
@@ -126,7 +126,7 @@ function updateChartColors() {
     };
     chart.options.scales.y.ticks.color = colors.text;
     chart.options.scales.y.title.color = colors.text;
-    
+
     // Update plugins
     chart.options.plugins.title.color = colors.title;
     chart.options.plugins.legend.labels.color = colors.text;
@@ -134,7 +134,7 @@ function updateChartColors() {
     chart.options.plugins.tooltip.borderColor = colors.tooltipBorder;
     chart.options.plugins.tooltip.titleColor = colors.title;
     chart.options.plugins.tooltip.bodyColor = colors.line;
-    
+
     chart.update();
 }
 
@@ -142,7 +142,7 @@ function setupEventListeners() {
     document.getElementById('addBlock').addEventListener('click', addBlock);
     document.getElementById('clearAll').addEventListener('click', clearAll);
     document.getElementById('exportChart').addEventListener('click', exportChart);
-    
+
     document.querySelectorAll('.btn-strategy').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const strategyKey = e.target.dataset.strategy;
@@ -161,12 +161,12 @@ function addBlock() {
         principal: 100,
         quantity: 1
     };
-    
+
     // Auto-price if BS mode is on and it's an option
     if (bsMode && optionBlocks.includes(blockType)) {
         position.cost = getBSPrice(blockType, position.strike, settings);
     }
-    
+
     positions.push(position);
     renderPositions();
     updateChart();
@@ -179,12 +179,12 @@ function updateSettings() {
     settings.riskFreeRate = parseFloat(document.getElementById('riskFreeRate').value) / 100 || 0.05;
     settings.timeToMaturity = parseFloat(document.getElementById('timeToMaturity').value) || 1;
     settings.volatility = parseFloat(document.getElementById('volatility').value) / 100 || 0.20;
-    
+
     // Re-price all options if BS mode is on
     if (bsMode) {
         recalculateBSPrices();
     }
-    
+
     updateChart();
     updatePnLTable();
     updateRiskFreeSummary();
@@ -192,11 +192,11 @@ function updateSettings() {
 
 function toggleBSMode() {
     bsMode = document.getElementById('bsMode').checked;
-    
+
     if (bsMode) {
         recalculateBSPrices();
     }
-    
+
     renderPositions();
     updateChart();
     updatePnLTable();
@@ -222,13 +222,13 @@ function updatePosition(id, field, value) {
     const position = positions.find(p => p.id === id);
     if (position) {
         position[field] = parseFloat(value) || 0;
-        
+
         // Recalculate premium if BS mode and strike changed on an option
         if (bsMode && field === 'strike' && optionBlocks.includes(position.type)) {
             position.cost = getBSPrice(position.type, position.strike, settings);
             renderPositions(); // Re-render to show updated premium
         }
-        
+
         updateChart();
         updatePnLTable();
         updateRiskFreeSummary();
@@ -237,16 +237,16 @@ function updatePosition(id, field, value) {
 
 function renderPositions() {
     const container = document.getElementById('positionsList');
-    
+
     if (positions.length === 0) {
         container.innerHTML = '<p style="color: #555; text-align: center; padding: 20px; text-transform: uppercase; font-size: 11px;">No positions added</p>';
         return;
     }
-    
+
     container.innerHTML = positions.map(pos => {
         const isRiskFree = riskFreeBlocks.includes(pos.type);
         const isNoPremium = noPremiumBlocks.includes(pos.type);
-        
+
         let inputsHTML = '';
         if (isRiskFree) {
             inputsHTML = `
@@ -288,7 +288,7 @@ function renderPositions() {
             const isOption = optionBlocks.includes(pos.type);
             const premiumDisabled = bsMode && isOption;
             const premiumClass = premiumDisabled ? 'input-bs-auto' : '';
-            
+
             inputsHTML = `
                 <div class="input-group">
                     <label>Strike</label>
@@ -316,7 +316,7 @@ function renderPositions() {
                 </div>
             `;
         }
-        
+
         return `
             <div class="position-item">
                 <div class="position-header">
@@ -333,22 +333,22 @@ function renderPositions() {
 
 function initializeChart() {
     const ctx = document.getElementById('payoffChart').getContext('2d');
-    
+
     // Custom plugin to draw axis break indicator
     const axisBreakPlugin = {
         id: 'axisBreak',
         afterDraw: (chart) => {
             if (!chart.options.plugins.axisBreak?.enabled) return;
-            
+
             const ctx = chart.ctx;
             const yAxis = chart.scales.y;
             const xAxis = chart.scales.x;
-            
+
             // Draw zigzag at bottom of y-axis
             const x = yAxis.left;
             const y = yAxis.bottom;
             const size = 6;
-            
+
             ctx.save();
             ctx.strokeStyle = '#ff9900';
             ctx.lineWidth = 1.5;
@@ -361,9 +361,9 @@ function initializeChart() {
             ctx.restore();
         }
     };
-    
+
     Chart.register(axisBreakPlugin);
-    
+
     chart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -419,7 +419,7 @@ function initializeChart() {
                         },
                         boxWidth: 12,
                         padding: 15,
-                        filter: function(item) {
+                        filter: function (item) {
                             return item.text !== 'Kink Points';
                         }
                     }
@@ -448,10 +448,10 @@ function initializeChart() {
                         family: "'Consolas', 'Monaco', monospace"
                     },
                     callbacks: {
-                        title: function(context) {
+                        title: function (context) {
                             return 'PRICE: $' + context[0].parsed.x.toFixed(2);
                         },
-                        label: function(context) {
+                        label: function (context) {
                             if (context.datasetIndex === 0) {
                                 const val = context.parsed.y;
                                 const color = val >= 0 ? '+' : '';
@@ -487,7 +487,7 @@ function initializeChart() {
                             family: "'Consolas', 'Monaco', monospace",
                             size: 10
                         },
-                        callback: function(value) {
+                        callback: function (value) {
                             return '$' + value.toFixed(0);
                         }
                     }
@@ -503,13 +503,13 @@ function initializeChart() {
                         }
                     },
                     grid: {
-                        color: function(context) {
+                        color: function (context) {
                             if (context.tick.value === 0) {
                                 return '#ff9900';
                             }
                             return '#333';
                         },
-                        lineWidth: function(context) {
+                        lineWidth: function (context) {
                             if (context.tick.value === 0) {
                                 return 1;
                             }
@@ -522,7 +522,7 @@ function initializeChart() {
                             family: "'Consolas', 'Monaco', monospace",
                             size: 10
                         },
-                        callback: function(value) {
+                        callback: function (value) {
                             return '$' + value.toFixed(0);
                         }
                     }
@@ -546,25 +546,25 @@ function updateChart() {
 
     const priceRange = determineDefaultPriceRange(positions);
     const payoffData = generatePayoffData(positions, priceRange.min, priceRange.max, settings);
-    
+
     // Find kink points (where slope changes) - these are at strike prices
     const kinkPoints = findKinkPoints(positions, priceRange, settings);
-    
+
     // Calculate y-axis bounds - include all kink points
     const yValues = payoffData.map(d => d.y);
     const kinkYValues = kinkPoints.map(k => k.y);
     const allYValues = [...yValues, ...kinkYValues, 0]; // Include 0 for break-even line
-    
+
     const yMin = Math.min(...allYValues);
     const yMax = Math.max(...allYValues);
     const yRange = yMax - yMin;
-    
+
     // Check if payoff is a flat line (constant value)
     const isFlat = yRange < 0.01;
-    
+
     let chartYMin, chartYMax;
     let enableAxisBreak = false;
-    
+
     if (isFlat) {
         // Flat line: center on the payoff value with +/- 5 padding
         const flatValue = yValues[0];
@@ -578,33 +578,33 @@ function updateChart() {
         const padding = yRange * 0.15;
         chartYMin = yMin - padding;
         chartYMax = yMax + padding;
-        
+
         // Ensure zero is always visible
         if (chartYMin > 0) chartYMin = -padding;
         if (chartYMax < 0) chartYMax = padding;
     }
-    
+
     // Create break-even line data
     const breakEvenData = [
         { x: priceRange.min, y: 0 },
         { x: priceRange.max, y: 0 }
     ];
-    
+
     chart.data.datasets[0].data = payoffData;
     chart.data.datasets[1].data = breakEvenData;
     chart.data.datasets[2].data = kinkPoints;
-    
+
     chart.options.scales.y.min = chartYMin;
     chart.options.scales.y.max = chartYMax;
     chart.options.plugins.axisBreak.enabled = enableAxisBreak;
-    
+
     chart.update();
 }
 
 function findKinkPoints(positions, priceRange, settings) {
     // Collect all strike prices where slope changes occur
     const strikes = new Set();
-    
+
     positions.forEach(pos => {
         // Options create kinks at their strike prices
         if (['long_call', 'short_call', 'long_put', 'short_put'].includes(pos.type)) {
@@ -615,7 +615,7 @@ function findKinkPoints(positions, priceRange, settings) {
             strikes.add(pos.strike);
         }
     });
-    
+
     // Filter strikes within visible range and calculate payoff at each
     return Array.from(strikes)
         .filter(strike => strike >= priceRange.min && strike <= priceRange.max)
@@ -627,7 +627,7 @@ function findKinkPoints(positions, priceRange, settings) {
 
 function updatePnLTable() {
     const container = document.getElementById('pnlTable');
-    
+
     if (positions.length === 0) {
         container.innerHTML = '<p style="color: #555; text-align: center; padding: 20px; text-transform: uppercase; font-size: 11px;">Add positions to see P&L table</p>';
         return;
@@ -635,15 +635,15 @@ function updatePnLTable() {
 
     const priceRange = determineDefaultPriceRange(positions);
     const step = (priceRange.max - priceRange.min) / 10;
-    
+
     let tableHTML = '<table><thead><tr><th>Underlying Price</th><th>Total P&L</th></tr></thead><tbody>';
-    
+
     for (let i = 0; i <= 10; i++) {
         const price = priceRange.min + (i * step);
         const pnl = calculateTotalPayoff(positions, price, settings);
         const pnlClass = pnl >= 0 ? 'positive' : 'negative';
         const sign = pnl >= 0 ? '+' : '';
-        
+
         tableHTML += `
             <tr>
                 <td>$${price.toFixed(2)}</td>
@@ -651,7 +651,7 @@ function updatePnLTable() {
             </tr>
         `;
     }
-    
+
     tableHTML += '</tbody></table>';
     container.innerHTML = tableHTML;
 }
@@ -659,19 +659,19 @@ function updatePnLTable() {
 function loadStrategy(strategyKey) {
     const strategy = Strategies[strategyKey];
     if (!strategy) return;
-    
+
     positions = strategy.positions.map(pos => ({
         id: nextId++,
         principal: 100,
         quantity: 1,
         ...pos
     }));
-    
+
     // Apply BS pricing if enabled
     if (bsMode) {
         recalculateBSPrices();
     }
-    
+
     renderPositions();
     updateChart();
     updatePnLTable();
@@ -682,7 +682,7 @@ function clearAll() {
     if (positions.length > 0 && !confirm('Clear all positions?')) {
         return;
     }
-    
+
     positions = [];
     renderPositions();
     updateChart();
@@ -693,25 +693,25 @@ function clearAll() {
 function updateRiskFreeSummary() {
     const container = document.getElementById('riskFreeSummary');
     if (!container) return;
-    
+
     const riskFreePositions = positions.filter(p => riskFreeBlocks.includes(p.type));
-    
+
     if (riskFreePositions.length === 0) {
         container.innerHTML = '<p style="color: #555; text-align: center; padding: 10px; text-transform: uppercase; font-size: 11px;">No risk-free positions</p>';
         return;
     }
-    
+
     const r = settings.riskFreeRate;
     const T = settings.timeToMaturity;
-    
+
     let totalValueToday = 0;
     let totalValueMaturity = 0;
-    
+
     const rows = riskFreePositions.map(pos => {
         const principal = pos.principal || 0;
         const quantity = pos.quantity || 1;
         const fv = principal * Math.exp(r * T);
-        
+
         let valueToday, valueMaturity;
         if (pos.type === 'long_risk_free') {
             // Lending: pay principal today, receive FV at maturity
@@ -722,16 +722,16 @@ function updateRiskFreeSummary() {
             valueToday = principal * quantity;
             valueMaturity = -fv * quantity;
         }
-        
+
         totalValueToday += valueToday;
         totalValueMaturity += valueMaturity;
-        
+
         const signToday = valueToday >= 0 ? '+' : '';
         const signMaturity = valueMaturity >= 0 ? '+' : '';
         const classToday = valueToday >= 0 ? 'positive' : 'negative';
         const classMaturity = valueMaturity >= 0 ? 'positive' : 'negative';
         const qtyLabel = quantity > 1 ? `${quantity}x ` : '';
-        
+
         return `
             <tr>
                 <td style="text-align: left;">${qtyLabel}${blockNames[pos.type]}</td>
@@ -740,12 +740,12 @@ function updateRiskFreeSummary() {
             </tr>
         `;
     }).join('');
-    
+
     const signTotalToday = totalValueToday >= 0 ? '+' : '';
     const signTotalMaturity = totalValueMaturity >= 0 ? '+' : '';
     const classTotalToday = totalValueToday >= 0 ? 'positive' : 'negative';
     const classTotalMaturity = totalValueMaturity >= 0 ? 'positive' : 'negative';
-    
+
     container.innerHTML = `
         <table>
             <thead>
@@ -769,7 +769,7 @@ function updateRiskFreeSummary() {
 
 function exportChart() {
     const format = document.getElementById('exportFormat').value;
-    
+
     if (format === 'png') {
         const link = document.createElement('a');
         link.download = 'payoff-diagram.png';
@@ -785,33 +785,37 @@ function exportCSV() {
         alert('No positions to export');
         return;
     }
-    
+
     const priceRange = determineDefaultPriceRange(positions);
     const payoffData = generatePayoffData(positions, priceRange.min, priceRange.max, settings);
-    
+
     // Build CSV content
-    let csv = 'Underlying Price,Total Payoff\n';
-    payoffData.forEach(point => {
-        csv += `${point.x.toFixed(2)},${point.y.toFixed(2)}\n`;
-    });
-    
+    let csv = '';
+
+    // Add settings
+    csv += 'Settings\n';
+    csv += `Spot Price,${settings.spotPrice}\n`;
+    csv += `Risk-Free Rate,${(settings.riskFreeRate * 100).toFixed(2)}%\n`;
+    csv += `Time to Maturity,${settings.timeToMaturity} years\n`;
+    csv += `Volatility,${(settings.volatility * 100).toFixed(2)}%\n`;
+    csv += `Black-Scholes Mode,${bsMode ? 'Yes' : 'No'}\n`;
+
     // Add positions summary
-    csv += '\n\nPositions Summary\n';
+    csv += '\nPositions Summary\n';
     csv += 'Type,Strike/Price,Premium/Cost,Quantity\n';
     positions.forEach(pos => {
         const strike = pos.strike || pos.principal || 0;
         const cost = pos.cost || 0;
         csv += `${blockNames[pos.type]},${strike},${cost},${pos.quantity || 1}\n`;
     });
-    
-    // Add settings
-    csv += '\n\nSettings\n';
-    csv += `Spot Price,${settings.spotPrice}\n`;
-    csv += `Risk-Free Rate,${(settings.riskFreeRate * 100).toFixed(2)}%\n`;
-    csv += `Time to Maturity,${settings.timeToMaturity} years\n`;
-    csv += `Volatility,${(settings.volatility * 100).toFixed(2)}%\n`;
-    csv += `Black-Scholes Mode,${bsMode ? 'Yes' : 'No'}\n`;
-    
+
+    // Add data
+    csv += '\nPayoff Data\n';
+    csv += 'Underlying Price,Total Payoff\n';
+    payoffData.forEach(point => {
+        csv += `${point.x.toFixed(2)},${point.y.toFixed(2)}\n`;
+    });
+
     // Download
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
