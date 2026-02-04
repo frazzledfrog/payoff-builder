@@ -447,10 +447,16 @@ function updateChart() {
     const priceRange = determineDefaultPriceRange(positions);
     const payoffData = generatePayoffData(positions, priceRange.min, priceRange.max, settings);
     
-    // Calculate y-axis bounds with smart truncation
+    // Find kink points (where slope changes) - these are at strike prices
+    const kinkPoints = findKinkPoints(positions, priceRange, settings);
+    
+    // Calculate y-axis bounds - include all kink points
     const yValues = payoffData.map(d => d.y);
-    const yMin = Math.min(...yValues);
-    const yMax = Math.max(...yValues);
+    const kinkYValues = kinkPoints.map(k => k.y);
+    const allYValues = [...yValues, ...kinkYValues, 0]; // Include 0 for break-even line
+    
+    const yMin = Math.min(...allYValues);
+    const yMax = Math.max(...allYValues);
     const yRange = yMax - yMin;
     
     // Check if payoff is a flat line (constant value)
@@ -468,26 +474,14 @@ function updateChart() {
         if (chartYMin > -5) chartYMin = -5;
         if (chartYMax < 5) chartYMax = 5;
     } else {
-        // Truncate if the minimum is very negative relative to the interesting part
-        let truncatedMin = yMin;
-        
-        // If zero is in range, focus around the zero line
-        if (yMin < 0 && yMax > 0) {
-            const absMax = Math.max(Math.abs(yMin), Math.abs(yMax));
-            const absMin = Math.min(Math.abs(yMin), Math.abs(yMax));
-            // If one side is much larger than the other, truncate
-            if (absMax > absMin * 3 && absMin > 0) {
-                if (Math.abs(yMin) > Math.abs(yMax)) {
-                    truncatedMin = -Math.abs(yMax) * 1.5;
-                    enableAxisBreak = true;
-                }
-            }
-        }
-        
-        // Add padding
-        const padding = yRange * 0.1;
-        chartYMin = enableAxisBreak ? truncatedMin : (yMin - padding);
+        // Add generous padding to see all inflection points clearly
+        const padding = yRange * 0.15;
+        chartYMin = yMin - padding;
         chartYMax = yMax + padding;
+        
+        // Ensure zero is always visible
+        if (chartYMin > 0) chartYMin = -padding;
+        if (chartYMax < 0) chartYMax = padding;
     }
     
     // Create break-even line data
@@ -495,9 +489,6 @@ function updateChart() {
         { x: priceRange.min, y: 0 },
         { x: priceRange.max, y: 0 }
     ];
-    
-    // Find kink points (where slope changes) - these are at strike prices
-    const kinkPoints = findKinkPoints(positions, priceRange, settings);
     
     chart.data.datasets[0].data = payoffData;
     chart.data.datasets[1].data = breakEvenData;
