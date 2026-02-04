@@ -439,6 +439,7 @@ function updateChart() {
         chart.data.datasets[2].data = [];
         chart.options.plugins.axisBreak.enabled = false;
         chart.options.scales.y.min = undefined;
+        chart.options.scales.y.max = undefined;
         chart.update();
         return;
     }
@@ -463,6 +464,9 @@ function updateChart() {
         const flatValue = yValues[0];
         chartYMin = flatValue - 5;
         chartYMax = flatValue + 5;
+        // Ensure zero line is visible if payoff is near zero
+        if (chartYMin > -5) chartYMin = -5;
+        if (chartYMax < 5) chartYMax = 5;
     } else {
         // Truncate if the minimum is very negative relative to the interesting part
         let truncatedMin = yMin;
