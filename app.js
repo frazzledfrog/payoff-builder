@@ -452,27 +452,39 @@ function updateChart() {
     const yMax = Math.max(...yValues);
     const yRange = yMax - yMin;
     
-    // Truncate if the minimum is very negative relative to the interesting part
-    let truncatedMin = yMin;
+    // Check if payoff is a flat line (constant value)
+    const isFlat = yRange < 0.01;
+    
+    let chartYMin, chartYMax;
     let enableAxisBreak = false;
     
-    // If zero is in range, focus around the zero line
-    if (yMin < 0 && yMax > 0) {
-        const absMax = Math.max(Math.abs(yMin), Math.abs(yMax));
-        const absMin = Math.min(Math.abs(yMin), Math.abs(yMax));
-        // If one side is much larger than the other, truncate
-        if (absMax > absMin * 3 && absMin > 0) {
-            if (Math.abs(yMin) > Math.abs(yMax)) {
-                truncatedMin = -Math.abs(yMax) * 1.5;
-                enableAxisBreak = true;
+    if (isFlat) {
+        // Flat line: center on the payoff value with +/- 5 padding
+        const flatValue = yValues[0];
+        chartYMin = flatValue - 5;
+        chartYMax = flatValue + 5;
+    } else {
+        // Truncate if the minimum is very negative relative to the interesting part
+        let truncatedMin = yMin;
+        
+        // If zero is in range, focus around the zero line
+        if (yMin < 0 && yMax > 0) {
+            const absMax = Math.max(Math.abs(yMin), Math.abs(yMax));
+            const absMin = Math.min(Math.abs(yMin), Math.abs(yMax));
+            // If one side is much larger than the other, truncate
+            if (absMax > absMin * 3 && absMin > 0) {
+                if (Math.abs(yMin) > Math.abs(yMax)) {
+                    truncatedMin = -Math.abs(yMax) * 1.5;
+                    enableAxisBreak = true;
+                }
             }
         }
+        
+        // Add padding
+        const padding = yRange * 0.1;
+        chartYMin = enableAxisBreak ? truncatedMin : (yMin - padding);
+        chartYMax = yMax + padding;
     }
-    
-    // Add padding
-    const padding = yRange * 0.1;
-    const chartYMin = enableAxisBreak ? truncatedMin : (yMin - padding);
-    const chartYMax = yMax + padding;
     
     // Create break-even line data
     const breakEvenData = [
