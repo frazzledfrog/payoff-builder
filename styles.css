@@ -500,6 +500,36 @@ select option {
     gap: 8px;
     margin-bottom: 10px;
     flex-shrink: 0;
+    align-items: center;
+}
+
+.breakeven-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-right: auto;
+}
+
+.breakeven-toggle input[type="checkbox"] {
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    cursor: pointer;
+}
+
+.breakeven-toggle input[type="checkbox"]:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.breakeven-toggle input[type="checkbox"]:checked + span {
+    color: var(--accent);
 }
 
 .chart-controls select {

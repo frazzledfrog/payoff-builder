@@ -103,6 +103,10 @@
             <div class="right-panel">
                 <section class="chart-section">
                     <div class="chart-controls">
+                        <label class="breakeven-toggle">
+                            <input type="checkbox" id="showBreakeven" onchange="toggleBreakeven()">
+                            <span>Break-Even Lines</span>
+                        </label>
                         <select id="exportFormat">
                             <option value="png">PNG Image</option>
                             <option value="csv">CSV Data</option>
@@ -112,6 +116,11 @@
                     <div class="chart-wrapper">
                         <canvas id="payoffChart"></canvas>
                     </div>
+                </section>
+
+                <section class="pnl-section">
+                    <h2>Cost Summary</h2>
+                    <div id="costSummary"></div>
                 </section>
 
                 <section class="pnl-section">

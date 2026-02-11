@@ -4,6 +4,7 @@ let positions = [];
 let chart = null;
 let nextId = 1;
 let bsMode = false;
+let showBreakeven = false;
 let currentTheme = 'bloomberg';
 let settings = {
     spotPrice: 100,
@@ -137,6 +138,7 @@ function updateChartColors() {
     chart.data.datasets[1].borderColor = colors.breakeven;
     chart.data.datasets[2].backgroundColor = colors.kink;
     chart.data.datasets[2].pointBorderColor = colors.kink;
+    chart.data.datasets[3].borderColor = colors.breakeven;
 
     // Update scales
     chart.options.scales.x.grid.color = colors.grid;
@@ -180,7 +182,7 @@ function addBlock() {
         type: blockType,
         strike: settings.spotPrice,
         cost: 5,
-        principal: 100,
+        desiredPayoff: 105,
         quantity: 1
     };
 
@@ -194,6 +196,7 @@ function addBlock() {
     updateChart();
     updatePnLTable();
     updateRiskFreeSummary();
+    updateCostSummary();
 }
 
 function updateSettings() {
@@ -210,6 +213,7 @@ function updateSettings() {
     updateChart();
     updatePnLTable();
     updateRiskFreeSummary();
+    updateCostSummary();
 }
 
 function toggleBSMode() {
@@ -222,6 +226,7 @@ function toggleBSMode() {
     renderPositions();
     updateChart();
     updatePnLTable();
+    updateCostSummary();
 }
 
 function recalculateBSPrices() {
@@ -238,6 +243,7 @@ function removeBlock(id) {
     updateChart();
     updatePnLTable();
     updateRiskFreeSummary();
+    updateCostSummary();
 }
 
 function updatePosition(id, field, value) {
@@ -254,6 +260,7 @@ function updatePosition(id, field, value) {
         updateChart();
         updatePnLTable();
         updateRiskFreeSummary();
+        updateCostSummary();
     }
 }
 
@@ -273,11 +280,11 @@ function renderPositions() {
         if (isRiskFree) {
             inputsHTML = `
                 <div class="input-group">
-                    <label>Principal</label>
+                    <label>Payoff at Maturity</label>
                     <input type="number" 
-                           value="${pos.principal}" 
+                           value="${pos.desiredPayoff}" 
                            step="1"
-                           onchange="updatePosition(${pos.id}, 'principal', this.value)">
+                           onchange="updatePosition(${pos.id}, 'desiredPayoff', this.value)">
                 </div>
                 <div class="input-group">
                     <label>Qty</label>
@@ -417,6 +424,16 @@ function initializeChart() {
                 pointBorderWidth: 2,
                 pointBackgroundColor: '#000',
                 showLine: false
+            }, {
+                label: 'Break-Even Lines',
+                data: [],
+                borderColor: '#ff9900',
+                borderWidth: 1,
+                borderDash: [6, 4],
+                pointRadius: 0,
+                fill: false,
+                showLine: true,
+                spanGaps: false
             }]
         },
         options: {
@@ -442,13 +459,13 @@ function initializeChart() {
                         boxWidth: 12,
                         padding: 15,
                         filter: function (item) {
-                            return item.text !== 'Kink Points';
+                            return item.text !== 'Kink Points' && item.text !== 'Break-Even Lines';
                         }
                     }
                 },
                 title: {
                     display: true,
-                    text: 'PAYOFF DIAGRAM',
+                    text: 'PAYOFF AT MATURITY',
                     color: '#ff9900',
                     font: {
                         family: "'Consolas', 'Monaco', monospace",
@@ -476,8 +493,8 @@ function initializeChart() {
                         label: function (context) {
                             if (context.datasetIndex === 0) {
                                 const val = context.parsed.y;
-                                const color = val >= 0 ? '+' : '';
-                                return `P&L: ${color}$${val.toFixed(2)}`;
+                                const sign = val >= 0 ? '+' : '';
+                                return `Payoff: ${sign}$${val.toFixed(2)}`;
                             }
                             if (context.datasetIndex === 2) {
                                 return `KINK @ $${context.parsed.x.toFixed(2)}`;
@@ -517,7 +534,7 @@ function initializeChart() {
                 y: {
                     title: {
                         display: true,
-                        text: 'PROFIT / LOSS',
+                        text: 'PAYOFF',
                         color: '#888',
                         font: {
                             family: "'Consolas', 'Monaco', monospace",
@@ -559,6 +576,7 @@ function updateChart() {
         chart.data.datasets[0].data = [];
         chart.data.datasets[1].data = [];
         chart.data.datasets[2].data = [];
+        chart.data.datasets[3].data = [];
         chart.options.plugins.axisBreak.enabled = false;
         chart.options.scales.y.min = undefined;
         chart.options.scales.y.max = undefined;
@@ -567,54 +585,60 @@ function updateChart() {
     }
 
     const priceRange = determineDefaultPriceRange(positions);
-    const payoffData = generatePayoffData(positions, priceRange.min, priceRange.max, settings);
+    const payoffData = generatePayoffData(positions, priceRange.min, priceRange.max, settings, 100, true);
 
-    // Find kink points (where slope changes) - these are at strike prices
+    // Find kink points using payoff-only values
     const kinkPoints = findKinkPoints(positions, priceRange, settings);
 
-    // Calculate y-axis bounds - include all kink points
+    // Calculate y-axis bounds
     const yValues = payoffData.map(d => d.y);
     const kinkYValues = kinkPoints.map(k => k.y);
-    const allYValues = [...yValues, ...kinkYValues, 0]; // Include 0 for break-even line
+    const allYValues = [...yValues, ...kinkYValues, 0];
 
     const yMin = Math.min(...allYValues);
     const yMax = Math.max(...allYValues);
     const yRange = yMax - yMin;
 
-    // Check if payoff is a flat line (constant value)
     const isFlat = yRange < 0.01;
 
     let chartYMin, chartYMax;
     let enableAxisBreak = false;
 
     if (isFlat) {
-        // Flat line: center on the payoff value with +/- 5 padding
         const flatValue = yValues[0];
         chartYMin = flatValue - 5;
         chartYMax = flatValue + 5;
-        // Ensure zero line is visible if payoff is near zero
         if (chartYMin > -5) chartYMin = -5;
         if (chartYMax < 5) chartYMax = 5;
     } else {
-        // Add generous padding to see all inflection points clearly
         const padding = yRange * 0.15;
         chartYMin = yMin - padding;
         chartYMax = yMax + padding;
-
-        // Ensure zero is always visible
         if (chartYMin > 0) chartYMin = -padding;
         if (chartYMax < 0) chartYMax = padding;
     }
 
-    // Create break-even line data
-    const breakEvenData = [
+    // Create zero line data
+    const zeroLineData = [
         { x: priceRange.min, y: 0 },
         { x: priceRange.max, y: 0 }
     ];
 
+    // Break-even vertical lines (where profit = payoff - cost = 0)
+    let breakevenLineData = [];
+    if (showBreakeven) {
+        const breakevenPrices = findBreakevenPoints(positions, priceRange, settings);
+        breakevenPrices.forEach(bePrice => {
+            breakevenLineData.push({ x: bePrice, y: chartYMin });
+            breakevenLineData.push({ x: bePrice, y: chartYMax });
+            breakevenLineData.push({ x: NaN, y: NaN }); // gap between lines
+        });
+    }
+
     chart.data.datasets[0].data = payoffData;
-    chart.data.datasets[1].data = breakEvenData;
+    chart.data.datasets[1].data = zeroLineData;
     chart.data.datasets[2].data = kinkPoints;
+    chart.data.datasets[3].data = breakevenLineData;
 
     chart.options.scales.y.min = chartYMin;
     chart.options.scales.y.max = chartYMax;
@@ -643,7 +667,7 @@ function findKinkPoints(positions, priceRange, settings) {
         .filter(strike => strike >= priceRange.min && strike <= priceRange.max)
         .map(strike => ({
             x: strike,
-            y: calculateTotalPayoff(positions, strike, settings)
+            y: calculateTotalPayoffOnly(positions, strike, settings)
         }));
 }
 
@@ -684,7 +708,7 @@ function loadStrategy(strategyKey) {
 
     positions = strategy.positions.map(pos => ({
         id: nextId++,
-        principal: 100,
+        desiredPayoff: 105,
         quantity: 1,
         ...pos
     }));
@@ -698,6 +722,7 @@ function loadStrategy(strategyKey) {
     updateChart();
     updatePnLTable();
     updateRiskFreeSummary();
+    updateCostSummary();
 }
 
 function clearAll() {
@@ -710,6 +735,7 @@ function clearAll() {
     updateChart();
     updatePnLTable();
     updateRiskFreeSummary();
+    updateCostSummary();
 }
 
 function updateRiskFreeSummary() {
@@ -730,19 +756,19 @@ function updateRiskFreeSummary() {
     let totalValueMaturity = 0;
 
     const rows = riskFreePositions.map(pos => {
-        const principal = pos.principal || 0;
+        const desiredPayoff = pos.desiredPayoff || 0;
         const quantity = pos.quantity || 1;
-        const fv = principal * Math.exp(r * T);
+        const pv = desiredPayoff * Math.exp(-r * T);
 
         let valueToday, valueMaturity;
         if (pos.type === 'long_risk_free') {
-            // Lending: pay principal today, receive FV at maturity
-            valueToday = -principal * quantity;
-            valueMaturity = fv * quantity;
+            // Lending: pay PV today, receive desiredPayoff at maturity
+            valueToday = -pv * quantity;
+            valueMaturity = desiredPayoff * quantity;
         } else {
-            // Borrowing: receive principal today, pay FV at maturity
-            valueToday = principal * quantity;
-            valueMaturity = -fv * quantity;
+            // Borrowing: receive PV today, pay desiredPayoff at maturity
+            valueToday = pv * quantity;
+            valueMaturity = -desiredPayoff * quantity;
         }
 
         totalValueToday += valueToday;
@@ -789,6 +815,99 @@ function updateRiskFreeSummary() {
     `;
 }
 
+function toggleBreakeven() {
+    showBreakeven = document.getElementById('showBreakeven').checked;
+    updateChart();
+}
+
+function findBreakevenPoints(positions, priceRange, settings) {
+    // Scan for where profit (payoff - cost) crosses zero
+    const totalCost = calculateTotalCost(positions, settings);
+    const numPoints = 500;
+    const step = (priceRange.max - priceRange.min) / (numPoints - 1);
+    const breakevenPrices = [];
+
+    let prevProfit = null;
+    let prevPrice = null;
+
+    for (let i = 0; i < numPoints; i++) {
+        const price = priceRange.min + (i * step);
+        const payoff = calculateTotalPayoffOnly(positions, price, settings);
+        const profit = payoff - totalCost;
+
+        if (prevProfit !== null && prevProfit * profit < 0) {
+            // Sign change — interpolate
+            const ratio = Math.abs(prevProfit) / (Math.abs(prevProfit) + Math.abs(profit));
+            const bePrice = prevPrice + ratio * step;
+            breakevenPrices.push(bePrice);
+        }
+
+        prevProfit = profit;
+        prevPrice = price;
+    }
+
+    return breakevenPrices;
+}
+
+function calculateTotalCost(positions, settings) {
+    const r = settings.riskFreeRate;
+    const T = settings.timeToMaturity;
+
+    return positions.reduce((total, pos) => {
+        const qty = pos.quantity || 1;
+        let cost = 0;
+
+        if (pos.type === 'long_call' || pos.type === 'long_put') {
+            cost = pos.cost * qty;
+        } else if (pos.type === 'short_call' || pos.type === 'short_put') {
+            cost = -pos.cost * qty;
+        } else if (pos.type === 'long_underlying') {
+            cost = pos.strike * qty;
+        } else if (pos.type === 'short_underlying') {
+            cost = -pos.strike * qty;
+        } else if (pos.type === 'long_risk_free') {
+            cost = (pos.desiredPayoff * Math.exp(-r * T)) * qty;
+        } else if (pos.type === 'short_risk_free') {
+            cost = -(pos.desiredPayoff * Math.exp(-r * T)) * qty;
+        }
+        // forwards: no upfront cost
+
+        return total + cost;
+    }, 0);
+}
+
+function updateCostSummary() {
+    const container = document.getElementById('costSummary');
+    if (!container) return;
+
+    if (positions.length === 0) {
+        container.innerHTML = '<p style="color: #555; text-align: center; padding: 10px; text-transform: uppercase; font-size: 11px;">Add positions to see cost summary</p>';
+        return;
+    }
+
+    const totalCost = calculateTotalCost(positions, settings);
+    const sign = totalCost >= 0 ? '+' : '';
+    const costClass = totalCost >= 0 ? 'negative' : 'positive'; // paying = negative, receiving = positive
+    const label = totalCost >= 0 ? 'Net Cost (You Pay)' : 'Net Credit (You Receive)';
+
+    container.innerHTML = `
+        <table>
+            <thead>
+                <tr>
+                    <th style="text-align: left;">Description</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="text-align: left; color: var(--text-primary);">${label}</td>
+                    <td class="${costClass}" style="font-weight: bold;">${sign}$${totalCost.toFixed(2)}</td>
+                </tr>
+            </tbody>
+        </table>
+    `;
+}
+
 function exportChart() {
     const format = document.getElementById('exportFormat').value;
 
@@ -826,7 +945,7 @@ function exportCSV() {
     csv += '\nPositions Summary\n';
     csv += 'Type,Strike/Price,Premium/Cost,Quantity\n';
     positions.forEach(pos => {
-        const strike = pos.strike || pos.principal || 0;
+        const strike = pos.strike || pos.desiredPayoff || 0;
         const cost = pos.cost || 0;
         csv += `${blockNames[pos.type]},${strike},${cost},${pos.quantity || 1}\n`;
     });

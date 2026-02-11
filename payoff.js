@@ -2,19 +2,15 @@
 
 const PayoffCalculator = {
     long_risk_free: (S, params, settings) => {
-        // Long risk-free (lending): flat payoff = +PV * exp(r*T) at maturity
-        const { principal } = params;
-        const r = settings.riskFreeRate;
-        const T = settings.timeToMaturity;
-        return principal * Math.exp(r * T);
+        // Long risk-free (lending): flat payoff = +desiredPayoff at maturity
+        const { desiredPayoff } = params;
+        return desiredPayoff;
     },
 
     short_risk_free: (S, params, settings) => {
-        // Short risk-free (borrowing): flat payoff = -PV * exp(r*T) at maturity
-        const { principal } = params;
-        const r = settings.riskFreeRate;
-        const T = settings.timeToMaturity;
-        return -principal * Math.exp(r * T);
+        // Short risk-free (borrowing): flat payoff = -desiredPayoff at maturity
+        const { desiredPayoff } = params;
+        return -desiredPayoff;
     },
 
     long_underlying: (S, params) => {
@@ -135,6 +131,35 @@ function calculateTotalPayoff(positions, underlyingPrice, settings) {
         const payoff = PayoffCalculator[position.type](underlyingPrice, {
             strike: position.strike,
             cost: position.cost,
+            desiredPayoff: position.desiredPayoff,
+            principal: position.principal
+        }, settings);
+        return total + (payoff * quantity);
+    }, 0);
+}
+
+// Payoff-only calculators (no premium subtracted for options)
+const PayoffOnlyCalculator = {
+    long_risk_free: PayoffCalculator.long_risk_free,
+    short_risk_free: PayoffCalculator.short_risk_free,
+    long_underlying: PayoffCalculator.long_underlying,
+    short_underlying: PayoffCalculator.short_underlying,
+    long_forward: PayoffCalculator.long_forward,
+    short_forward: PayoffCalculator.short_forward,
+    long_call: (S, params) => Math.max(S - params.strike, 0),
+    short_call: (S, params) => -Math.max(S - params.strike, 0),
+    long_put: (S, params) => Math.max(params.strike - S, 0),
+    short_put: (S, params) => -Math.max(params.strike - S, 0)
+};
+
+// Calculate total payoff-only (no premiums) across all positions
+function calculateTotalPayoffOnly(positions, underlyingPrice, settings) {
+    return positions.reduce((total, position) => {
+        const quantity = position.quantity || 1;
+        const payoff = PayoffOnlyCalculator[position.type](underlyingPrice, {
+            strike: position.strike,
+            cost: position.cost,
+            desiredPayoff: position.desiredPayoff,
             principal: position.principal
         }, settings);
         return total + (payoff * quantity);
@@ -142,13 +167,14 @@ function calculateTotalPayoff(positions, underlyingPrice, settings) {
 }
 
 // Generate payoff data for a range of underlying prices
-function generatePayoffData(positions, minPrice, maxPrice, settings, numPoints = 100) {
+function generatePayoffData(positions, minPrice, maxPrice, settings, numPoints = 100, payoffOnly = false) {
     const data = [];
     const step = (maxPrice - minPrice) / (numPoints - 1);
+    const calcFn = payoffOnly ? calculateTotalPayoffOnly : calculateTotalPayoff;
     
     for (let i = 0; i < numPoints; i++) {
         const price = minPrice + (i * step);
-        const payoff = calculateTotalPayoff(positions, price, settings);
+        const payoff = calcFn(positions, price, settings);
         data.push({ x: price, y: payoff });
     }
     
