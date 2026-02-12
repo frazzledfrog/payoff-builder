@@ -821,8 +821,10 @@ function toggleBreakeven() {
 }
 
 function findBreakevenPoints(positions, priceRange, settings) {
-    // Scan for where profit (payoff - cost) crosses zero
+    // Break-even at maturity: payoff must equal the future value of the cost
+    // (cost today could have earned the risk-free rate instead)
     const totalCost = calculateTotalCost(positions, settings);
+    const fvCost = totalCost * Math.exp(settings.riskFreeRate * settings.timeToMaturity);
     const numPoints = 500;
     const step = (priceRange.max - priceRange.min) / (numPoints - 1);
     const breakevenPrices = [];
@@ -833,7 +835,7 @@ function findBreakevenPoints(positions, priceRange, settings) {
     for (let i = 0; i < numPoints; i++) {
         const price = priceRange.min + (i * step);
         const payoff = calculateTotalPayoffOnly(positions, price, settings);
-        const profit = payoff - totalCost;
+        const profit = payoff - fvCost;
 
         if (prevProfit !== null && prevProfit * profit < 0) {
             // Sign change — interpolate
